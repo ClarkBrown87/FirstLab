@@ -2,9 +2,9 @@
 //
 
 #include <iostream>
+#include <GL/freeglut.h>
 
-
-int main()
+int main(int argc, char** argv)
 {
-    std::cout << "Hello World!\n";
+    glutInit(&argc, argv); //инициализация glut
 }
