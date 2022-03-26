@@ -9,4 +9,8 @@ int main(int argc, char** argv)
     glutInit(&argc, argv); //инициализация glut
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA); //двойная буферизация и буфер цвета
+
+    glutInitWindowSize(1024, 768);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("Tutorial 01");
 }
