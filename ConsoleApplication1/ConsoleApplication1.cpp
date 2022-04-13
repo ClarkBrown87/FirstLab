@@ -1,6 +1,8 @@
 ﻿// ConsoleApplication1.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
 //
 
+#define _USE_MATH_DEFINES // для C++
+#include <cmath>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -38,27 +40,36 @@ glm::mat4 Moving(glm::mat4& m) {
     return m;
 }
 
-glm::mat4 Persp(glm::mat4& m) {
-    const float ar = 100/100;
-    const float zNear = 1.0f;
-    const float zFar = 100.f;
-    const float zRange = zNear - zFar;
-    const float tanHalfFOV = tanf((30.f / 2.0f)*(3.14/180));
-    m[0][0] = 1.0f / (tanHalfFOV * ar); m[0][1] = 0.0f;            m[0][2] = 0.0f;                   m[0][3] = 0.0;
-    m[1][0] = 0.0f;                   m[1][1] = 1.0f / tanHalfFOV; m[1][2] = 0.0f;                   m[1][3] = 0.0;
-    m[2][0] = 0.0f;                   m[2][1] = 0.0f;            m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 2.0f * zFar * zNear / zRange;
-    m[3][0] = 0.0f;                   m[3][1] = 0.0f;            m[3][2] = 1.0f;                   m[3][3] = 0.0;
+glm::mat4 InitPerspectiveProj(float fovy, float aspect, float znear, float zfar){
+    glm::mat4 m;
+    const float zRange = znear - zfar;
+    const float tanHalfFOV = tanf(fovy / 2.0 * M_PI / 180);
+
+    m[0][0] = 1.0f / (tanHalfFOV * aspect);
+    m[0][1] = 0.0f;
+    m[0][2] = 0.0f;
+    m[0][3] = 0.0f;
+
+    m[1][0] = 0.0f;
+    m[1][1] = 1.0f / tanHalfFOV;
+    m[1][2] = 0.0f;
+    m[1][3] = 0.0f;
+
+    m[2][0] = 0.0f;
+    m[2][1] = 0.0f;
+    m[2][2] = (-znear - zfar) / zRange;
+    m[2][3] = 2.0f * zfar * znear / zRange;
+
+    m[3][0] = 0.0f;
+    m[3][1] = 0.0f;
+    m[3][2] = 1.0f;
+    m[3][3] = 0.0f;
+
     return m;
 }
 
 void RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT); //очистка буфера кадра
-
-    const float ar = 100/100;
-    const float zNear = 1.0f;
-    const float zFar = 1000.0f;
-    const float zRange = zNear - zFar;
-    const float tanHalfFOV = tanf((30.0f / 2.0) * (3.14 / 180));
 
     glm::vec3 Vertices[3];
     Vertices[0] = glm::vec3(-1.0f, -1.0f, 0.0f);
@@ -70,13 +81,13 @@ void RenderSceneCB() {
     glm::mat4 mtconv = Conversion(mtconv); //создаем матрицу
     glm::mat4 mtrotation = Rotation(mtrotation);
     glm::mat4 mtmove = Moving(mtmove);
-    glm::mat4 mtpersp = Persp(mtpersp);
-    glm::mat4 proj = glm::perspective(10.0f, (float)width / (float)height, 1.0f, 100.0f);
+    //glm::mat4 proj = glm::perspective(10.0f, (float)width / (float)height, 1.0f, 100.0f);
+    glm::mat4 proj = InitPerspectiveProj(120.0f, (float)width / (float)height, 1.0f, 2000.0f);
 
 
-    Vertices[0] = glm::vec4(Vertices[0], 1.0f) * mtrotation * mtmove * proj;
-    Vertices[1] = glm::vec4(Vertices[1], 1.0f) * mtrotation * mtmove * proj;
-    Vertices[2] = glm::vec4(Vertices[2], 1.0f) * mtrotation * mtmove * proj;
+    Vertices[0] = glm::vec4(Vertices[0], 1.0f) * proj * mtmove * mtrotation * mtconv;
+    Vertices[1] = glm::vec4(Vertices[1], 1.0f) * proj * mtmove * mtrotation * mtconv;
+    Vertices[2] = glm::vec4(Vertices[2], 1.0f) * proj * mtmove * mtrotation * mtconv;
 
     glGenBuffers(1, &VBO); //генерация объектов переменных типов(кол-во, ссылка на массив)
     glBindBuffer(GL_ARRAY_BUFFER, VBO); //привязываем указатель к названию цели и затем запускаем команду на цель(массив вершин, )
